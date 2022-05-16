@@ -1,4 +1,4 @@
-% Example of HLF function approximation (see [CCZ21, section 4.1])
+% Example of HLF function decomposition (see [CCZ22, Sec. 4.2])
 %
 % Function:
 % f(x1,x2,x3)=x2^2*sin(10*x2)*sin(20*x1)/(sin(2*pi*x3)+2)*exp(-x1^2-2*x2)
@@ -6,13 +6,13 @@
 % Method: Hermite-Laguerre-Fourier and Fourier-Fourier-Fourier
 % Evaluation points: nbold uniformely distributed
 %
-% [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2021
+%         tensor-structured problems, Submitted 2022
 
 clear all
 addpath('../src')
-disp(sprintf('---- HLF function approximation ----'))
+disp(sprintf('---- HLF function decomposition ----'))
 d = 3;
 f = @(x1, x2, x3) x2.^2.*sin(10*x2).*sin(20*x1)./(sin(2*pi*x3)+2).*exp(-x1.^2-2*x2);
 alpha = 4;
@@ -139,6 +139,6 @@ semilogy(summary_elapsed(1,:), summary_err(1,:), '-*g', ...
 legend('HLF method', 'FFF method')
 xlabel('Wall-clock time')
 ylabel('Achieved accuracy')
-title(sprintf('HLF function approximation (d = %d)', d))
+title(sprintf('HLF function decomposition (d = %d)', d))
 grid on
 drawnow

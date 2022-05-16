@@ -1,20 +1,20 @@
-% Example of multivariate interpolation (see [CCZ21, section 4.2])
+% Example of multivariate interpolation (see [CCZ22, Sec. 4.3])
 %
-% Function: f(x1,x2,x3,x4)=1/(1+16*(x1^2+x2^2+x3^2+x4^2))
-% Domain: [a1,b1]x[a2,b2]x[a3,b3]x[a4,b4]=[-1,1]^4
+% Function: f(x1,x2,x3,x4,x5)=1/(1+16*(x1^2+x2^2+x3^2+x4^2+x5^2))
+% Domain: [a1,b1]x[a2,b2]x[a3,b3]x[a4,b4]x[a5,b5]=[-1,1]^5
 % Method: Second barycentric Lagrange interpolation
 % Interpolation nodes: mbold Chebyshev points
 % Evaluation points: nbold uniformely distributed
 %
-% [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2021
+%         tensor-structured problems, Submitted 2022
 
 clear all
 addpath('../src')
 disp(sprintf('---- Multivariate interpolation ----'))
-d = 4;
-f = @(x1, x2, x3, x4) 1./(1+16*(x1.^2+x2.^2+x3.^2+x4.^2));
+d = 5;
+f = @(x1, x2, x3, x4, x5) 1./(1+16*(x1.^2+x2.^2+x3.^2+x4.^2+x5.^2));
 a = -ones(1, d);
 b = ones(1, d);
 nbold = 35*ones(1, d);
@@ -24,7 +24,7 @@ end
 [X{1:d}] = ndgrid(x{1:d});
 F_exact = f(X{1:d});
 F_exact_norm = max(abs(F_exact(:)));
-mrange = 10:10:100;
+mrange = 5:10:45;
 counter = 0;
 for m = mrange
   counter = counter+1;

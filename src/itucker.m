@@ -16,14 +16,14 @@ function T = itucker(T,varargin)
 %    tensor of size m_1 x ... x m_d, while Lmu is a complex matrix of size
 %    m_{mu} x n_{mu}.
 %
-%    In both cases, if m_{mu} ~= n_{mu} a least square solution of the
-%    corresponding linear system is computed along the mu-th direction.
+%    In both cases, if m_{mu} ~= n_{mu} the corresponding rectangular
+%    system is solved along the mu-th direction.
 %    Moreover, if the entry corresponding to the mu-th matrix is empty,
 %    the associated mu-mode product is skipped.
 %
-%    [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2021
+%            problems, Submitted 2022
   if (nargin < 2)
     error('Not enough input arguments.');
   end
@@ -39,14 +39,28 @@ function T = itucker(T,varargin)
   if (lmu == 0)
     error('Not enough non-empty input arguments.');
   end
-  if(mur(1) == 1)
+  if (mur(1) == 1) && (mur(lmu) == lT)
+    T = varargin{1}\reshape(T, sT(1), []);
+    sT(1) = size(T, 1);
+    T = reshape(T, [], sT(mur(lmu)))/varargin{mur(lmu)}.';
+    sT(mur(lmu)) = size(T, 2);
+    T = reshape(T, sT);
+    mur = mur(2:lmu-1);
+    lmu = lmu-2;
+  elseif (mur(1) == 1) && (mur(lmu) ~= lT)
     T = varargin{1}\reshape(T, sT(1), []);
     sT(1) = size(T, 1);
     T = reshape(T, sT);
     mur = mur(2:lmu);
     lmu = lmu-1;
+  elseif (mur(1) ~= 1) && (mur(lmu) == lT)
+    T = reshape(T, [], sT(mur(lmu)))/varargin{mur(lmu)}.';
+    sT(mur(lmu)) = size(T, 2);
+    T = reshape(T, sT);
+    mur = mur(1:lmu-1);
+    lmu = lmu-1;
   end
-  if lmu > 0
+  if (lmu > 0)
     T = permute(T, [mur(1), 1:(mur(1)-1), (mur(1)+1):lT]);
     for mu = 1:(lmu-1)
       T = varargin{mur(mu)}\reshape(T, sT(mur(mu)), []);
@@ -66,16 +80,8 @@ end
 %! A{2} = randn(3);
 %! A{3} = randn(4);
 %! assert(itucker(T,A),itucker(T,A{1},A{2},A{3}))
-%!test
-%! T = randn(2,3,4);
-%! A{1} = randn(2);
-%! A{2} = randn(3);
-%! A{3} = randn(4);
-%! out = itucker(T,A);
-%! ref = tucker(T,inv(A{1}),inv(A{2}),inv(A{3}));
-%! assert(out,ref,1e-10)
 %!test % 1d
-%! T = randn(2);
+%! T = randn(2,1);
 %! A = randn(2);
 %! out = itucker(T,A);
 %! ref = A\T;
@@ -87,13 +93,6 @@ end
 %! out = itucker(T,A);
 %! ref = mump(mump(T,inv(A{1}),1),inv(A{2}),2);
 %! assert(out,ref,1e-10)
-%!test % 2d complex
-%! T = randn(2,3)+1i*randn(2,3);
-%! A{1} = randn(2)+1i*randn(2);
-%! A{2} = randn(3)+1i*randn(3);
-%! out = itucker(T,A);
-%! ref = mump(mump(T,inv(A{1}),1),inv(A{2}),2);
-%! assert(out,ref,1e-10)
 %!test % 3d
 %! T = randn(2,3,4);
 %! A{1} = randn(2);
@@ -102,19 +101,56 @@ end
 %! out = itucker(T,A);
 %! ref = mump(mump(mump(T,inv(A{1}),1),inv(A{2}),2),inv(A{3}),3);
 %! assert(out,ref,1e-10)
-%!test
+%!test % 4d
+%! T = randn(2,3,4,5);
+%! A{1} = randn(2);
+%! A{2} = randn(3);
+%! A{3} = randn(4);
+%! A{4} = randn(5);
+%! out = itucker(T,A);
+%! ref = mump(mump(mump(mump(T,inv(A{1}),1),inv(A{2}),2),inv(A{3}),3),inv(A{4}),4);
+%! assert(out,ref,1e-10)
+%!test % tucker
+%! T = randn(2,3,4,5);
+%! A{1} = randn(2);
+%! A{2} = randn(3);
+%! A{3} = randn(4);
+%! A{4} = randn(5);
+%! out = itucker(T,A);
+%! ref = tucker(T,inv(A{1}),inv(A{2}),inv(A{3}),inv(A{4}));
+%! assert(out,ref,1e-10)
+%!test % 2d non-square
 %! T = randn(5,4);
 %! A = randn(5,3);
 %! B = randn(4,2);
 %! ref = (B\(A\T)')';
-%!test
+%! assert(ref,itucker(T,A,B),1e-10)
+%!test % 3d non-square
 %! T = randn(3,4);
 %! A = randn(3,5);
 %! B = randn(4,2);
 %! C = randn(1,6);
 %! ref = ipermute(reshape(C\(reshape(permute((B\(A\T)')',[3,1,2]),1,5*2)),...
 %!       [6,5,2]),[3,1,2]);
-%! assert(ref,itucker(T,A,B,C))
+%! assert(ref,itucker(T,A,B,C),1e-10)
+%!test % complex
+%! T = randn(2,3,4)+1i*randn(2,3,4);
+%! A{1} = randn(2)+1i*randn(2);
+%! A{2} = randn(3)+1i*randn(3);
+%! A{3} = randn(4)+1i*randn(4);
+%! out = itucker(T,A);
+%! ref = mump(mump(mump(T,inv(A{1}),1),inv(A{2}),2),inv(A{3}),3);
+%! assert(out,ref,1e-10)
+%!test %tensor with implicit last dimension
+%! T = randn(2,3,4);
+%! A{1} = randn(2);
+%! A{2} = randn(3);
+%! A{3} = randn(4);
+%! A{4} = randn(1,5);
+%! out = itucker(T,A);
+%! ref = ipermute(reshape(A{4}\mumat(tucker(T,inv(A{1}),inv(A{2}),inv(A{3})),4),...
+%!                [5,2,3,4]),[4,1,2,3]);
+%! assert(out,ref,1e-13)
 %!test % Jump some modes
 %! T = randn(2,3,4,5);
 %! A1 = randn(2);

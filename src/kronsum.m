@@ -16,9 +16,9 @@ function K = kronsum(varargin)
 %    K = KRONSUM(L1, L2, ..., Ld) produces the Kronecker sum of the
 %    complex matrices L1, L2, ..., Ld, with Lmu of size n_{mu} x n_{mu}.
 %
-%    [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2021
+%            problems, Submitted 2022
   if (nargin < 1)
     error('Not enough input arguments.')
   end
@@ -38,9 +38,18 @@ function K = kronsum(varargin)
                speye(prod(n(1:mu-1))));
   end
   K = K+kron(varargin{d}, speye(prod(n(1:d-1))));
+end
+%!test % different input form
+%! A{1} = sprand(3,3,0.1);
+%! A{2} = sprand(4,4,0.1);
+%! assert(kronsum(A),kronsum(A{1},A{2}))
 %!test % 2d
 %! A{1} = sprand(3,3,0.1);
 %! A{2} = sprand(4,4,0.1);
+%! assert(kronsum(A),kron(speye(4),A{1})+kron(A{2},speye(3)))
+%!test % 2d full
+%! A{1} = rand(3,3);
+%! A{2} = rand(4,4);
 %! assert(kronsum(A),kron(speye(4),A{1})+kron(A{2},speye(3)))
 %!test % 3d
 %! A{1} = sprand(3,3,0.1);
@@ -50,13 +59,6 @@ function K = kronsum(varargin)
 %!  kron(kron(speye(5),speye(4)),A{1})+...
 %!  kron(kron(speye(5),A{2}),speye(3))+...
 %!  kron(kron(A{3},speye(4)),speye(3)),eps)
-%!error % 1d full
-%! A{1} = rand(3,3);
-%! assert(kronsum(A),A{1})
-%!test % 2d full
-%! A{1} = rand(3,3);
-%! A{2} = rand(4,4);
-%! assert(kronsum(A),kron(speye(4),A{1})+kron(A{2},speye(3)))
 %!test % 3d full
 %! A{1} = rand(3,3);
 %! A{2} = rand(4,4);
@@ -66,18 +68,20 @@ function K = kronsum(varargin)
 %!  kron(kron(speye(5),A{2}),speye(3))+...
 %!  kron(kron(A{3},speye(4)),speye(3)),2*eps)
 %! assert(issparse(kronsum(A)),true)
-%!test
-%! A = sprand(3, 3, 0.1);
-%! B = sprand(4, 4, 0.1);
-%! C = sprand(5, 5, 0.1);
-%! U = randn (3, 4, 5);
-%! assert(kronsum(A, B,C)*U(:), kronsumv(U, A, B, C)(:),10*eps)
-%!test
-%! A = randn(3) + 1i*randn(3);
-%! B = randn(2) + 1i*randn(2);
-%! ref = kron(speye(2), A) + kron(B, speye(3));
+%!test %kronsumv
+%! A = sprand(3,3,0.1);
+%! B = sprand(4,4,0.1);
+%! C = sprand(5,5,0.1);
+%! U = randn(3,4,5);
+%! assert(kronsum(A,B,C)*U(:), kronsumv(U, A, B, C)(:),10*eps)
+%!test % complex
+%! A = randn(3)+1i*randn(3);
+%! B = randn(2)+1i*randn(2);
+%! ref = kron(speye(2),A)+kron(B,speye(3));
 %! assert(kronsum(A,B), ref)
 %!error
 %! kronsum()
 %!error
 %! kronsum({rand(2),[]})
+%!error
+%! kronsum(rand(3));

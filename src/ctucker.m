@@ -18,9 +18,9 @@ function T = ctucker(T,varargin)
 %    In both cases, if the entry corresponding to the mu-th matrix is empty,
 %    then the associated mu-mode product is skipped.
 %
-%    [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2021
+%            problems, Submitted 2022
   if (nargin < 2)
     error('Not enough input arguments.');
   end
@@ -36,14 +36,28 @@ function T = ctucker(T,varargin)
   if (lmu == 0)
     error('Not enough non-empty input arguments.');
   end
-  if(mur(1) == 1)
+  if (mur(1) == 1) && (mur(lmu) == lT)
+    T = conj(varargin{1})*reshape(T, sT(1), []);
+    sT(1) = size(T, 1);
+    T = reshape(T,[],sT(mur(lmu)))*varargin{mur(lmu)}';
+    sT(mur(lmu)) = size(T, 2);
+    T = reshape(T, sT);
+    mur = mur(2:lmu-1);
+    lmu = lmu-2;
+  elseif (mur(1) == 1) && (mur(lmu) ~= lT)
     T = conj(varargin{1})*reshape(T, sT(1), []);
     sT(1) = size(T, 1);
     T = reshape(T, sT);
     mur = mur(2:lmu);
     lmu = lmu-1;
+  elseif (mur(1) ~= 1) && (mur(lmu) == lT)
+    T = reshape(T, [], sT(mur(lmu)))*varargin{mur(lmu)}';
+    sT(mur(lmu)) = size(T, 2);
+    T = reshape(T, sT);
+    mur = mur(1:lmu-1);
+    lmu = lmu-1;
   end
-  if lmu > 0
+  if (lmu > 0)
     T = permute(T, [mur(1), 1:(mur(1)-1), (mur(1)+1):lT]);
     for mu = 1:(lmu-1)
       T = conj(varargin{mur(mu)})*reshape(T, sT(mur(mu)), []);
@@ -68,14 +82,14 @@ end
 %! A = randn(3,2)+1i*randn(3,2);
 %! out = ctucker(T,A);
 %! ref = conj(A)*T;
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test % 2d
 %! T = randn(2,3)+1i*randn(2,3);
 %! A{1} = randn(3,2)+1i*randn(3,2);
 %! A{2} = randn(4,3)+1i*randn(4,3);
 %! out = ctucker(T,A);
 %! ref = conj(A{1})*T*A{2}';
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test % 3d
 %! T = randn(2,3,4)+1i*randn(2,3,4);
 %! A{1} = randn(3,2)+1i*randn(3,2);
@@ -83,16 +97,32 @@ end
 %! A{3} = randn(5,4)+1i*randn(5,4);
 %! out = ctucker(T,A);
 %! ref = mump(mump(mump(T,conj(A{1}),1),conj(A{2}),2),conj(A{3}),3);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
+%!test % 3d real
+%! T = randn(2,3,4);
+%! A{1} = randn(3,2);
+%! A{2} = randn(4,3);
+%! A{3} = randn(5,4);
+%! out = ctucker(T,A);
+%! ref = mump(mump(mump(T,A{1},1),A{2},2),A{3},3);
+%! assert(out,ref,1e-13)
 %!test % 4d
-%! T = randn(2,3,4,5) +1i*randn(2,3,4,5);
+%! T = randn(2,3,4,5)+1i*randn(2,3,4,5);
 %! A{1} = randn(3,2)+1i*randn(3,2);
 %! A{2} = randn(4,3)+1i*randn(4,3);
 %! A{3} = randn(5,4)+1i*randn(5,4);
 %! A{4} = randn(6,5)+1i*randn(6,5);
 %! out = ctucker(T,A);
 %! ref = mump(mump(mump(mump(T,conj(A{1}),1),conj(A{2}),2),conj(A{3}),3),conj(A{4}),4);
-%! assert(out,ref)
+%!test % tucker
+%! T = randn(2,3,4,5)+1i*randn(2,3,4,5);
+%! A{1} = randn(3,2)+1i*randn(3,2);
+%! A{2} = randn(4,3)+1i*randn(4,3);
+%! A{3} = randn(5,4)+1i*randn(5,4);
+%! A{4} = randn(6,5)+1i*randn(6,5);
+%! out = ctucker(T,A);
+%! ref = tucker(T,conj(A{1}),conj(A{2}),conj(A{3}),conj(A{4}));
+%! assert(out,ref,1e-13)
 %!test % tensorization
 %! A{1} = randn(2,1)+1i*randn(2,1);
 %! A{2} = randn(3,1)+1i*randn(3,1);
@@ -100,7 +130,7 @@ end
 %! A{4} = randn(5,1)+1i*randn(5,1);
 %! out = ctucker(1,A);
 %! ref = tensorize(conj(A{1}),conj(A{2}),conj(A{3}),conj(A{4}));
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test %tensor with implicit last dimension
 %! T = randn(2,3,4)+1i*randn(2,3,4);
 %! A{1} = randn(2)+1i*randn(2);
@@ -109,7 +139,7 @@ end
 %! A{4} = randn(5,1)+1i*randn(5,1);
 %! out = ctucker(T,A);
 %! ref = mump(mump(mump(mump(T,conj(A{1}),1),conj(A{2}),2),conj(A{3}),3),conj(A{4}),4);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test % Jump some modes
 %! T = randn(2,3,4,5)+1i*randn(2,3,4,5);
 %! A1 = randn(3,2)+1i*randn(3,2);
@@ -118,28 +148,28 @@ end
 %! A4 = randn(6,5)+1i*randn(6,5);
 %! out = ctucker(T,[],A2,A3,A4);
 %! ref = mump(mump(mump(T,conj(A2),2),conj(A3),3),conj(A4),4);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = ctucker(T,A1,[],A3,A4);
 %! ref = mump(mump(mump(T,conj(A1),1),conj(A3),3),conj(A4),4);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = ctucker(T,A1,A2,[],A4);
 %! ref = mump(mump(mump(T,conj(A1),1),conj(A2),2),conj(A4),4);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = ctucker(T,A1,A2,A3,[]);
 %! ref = mump(mump(mump(T,conj(A1),1),conj(A2),2),conj(A3),3);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = ctucker(T,[],A2,A3,[]);
 %! ref = mump(mump(T,conj(A2),2),conj(A3),3);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = ctucker(T,A1,[],[],A4);
 %! ref = mump(mump(T,conj(A1),1),conj(A4),4);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = ctucker(T,A1,[],A3,[]);
 %! ref = mump(mump(T,conj(A1),1),conj(A3),3);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = ctucker(T,[],[],A3,[]);
 %! ref = mump(T,conj(A3),3);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!error
 %! ctucker();
 %!error

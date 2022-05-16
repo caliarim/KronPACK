@@ -1,12 +1,16 @@
-%  Scripts to repoduce the numerical examples of [CCZ21]
+%  Scripts to reproduce the numerical experiments of [CCZ22]
 %
-%  [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%  [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %          A mu-mode BLAS approach for multidimensional tensor-structured
-%          problems, Submitted 2021
+%          problems, Submitted 2022
 %
-%  Numerical examples
-%    example_spectral      - Hermite-Laguerre-Fourier function approximation
+%  Numerical experiments
+%    code_validation       - Code validation*
+%    example_spectral      - Hermite-Laguerre-Fourier function decomposition
 %    example_interpolation - Multivariate interpolation
 %    example_exponential   - Linear evolutionary equation
 %    example_imex          - Semilinear evolutionary equation
-%    example_all           - All the numerical examples
+%    run_all               - Run all the numerical experiments
+%
+%  *requires Tensorlab and Tensor Toolbox for MATLAB, hence it can't
+%   be executed in GNU Octave.

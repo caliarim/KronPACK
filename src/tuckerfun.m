@@ -5,21 +5,22 @@ function T = tuckerfun(T,varargin)
 %       S = T x_1 L{1} x_2 L{2} x_3 ... x_d L{d}.
 %
 %    Here T is a complex tensor of size m_1 x ... x m_d, L a cell array
-%    of functions which act on columns and x_mu denotes the mu-mode action.
+%    of functions which act on columns of a matrix and x_mu denotes the
+%    mu-mode action.
 %
 %    S = TUCKERFUN(T, L1, L2, ..., Ld) computes the Tucker operator
 %
 %       S = T x_1 L1 x_2 L2 x_3 ... x_d Ld.
 %
 %    Here T is a complex tensor of size m_1 x ... x m_d, while Lmu is a
-%    function which acts on columns.
+%    function which acts on columns of a matrix.
 %
 %    In both cases, if the entry corresponding to the mu-th function is empty,
 %    then the associated mu-mode action is skipped.
 %
-%    [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2021
+%            problems, Submitted 2022
   if (nargin < 2)
     error('Not enough input arguments.');
   end
@@ -64,15 +65,15 @@ end
 %! Afun{1} = @(X) A{1}*X;
 %! Afun{2} = @(X) A{2}*X;
 %! Afun{3} = @(X) A{3}*X;
-%! assert(tuckerfun(T,Afun),tuckerfun(T,Afun{1},Afun{2},Afun{3}))
-% Function matrix--matrix
+%! assert(tuckerfun(T,Afun),tuckerfun(T,Afun{1},Afun{2},Afun{3}),1e-13)
+%! % Function matrix--matrix
 %!test % 1d
-%! T = randn(2);
+%! T = randn(2,1);
 %! A = randn(3,2);
 %! Afun = @(X) A*X;
 %! out = tuckerfun(T,Afun);
 %! ref = A*T;
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test % 2d
 %! T = randn(2,3);
 %! A{1} = randn(3,2);
@@ -81,7 +82,7 @@ end
 %! Afun{2} = @(X) A{2}*X;
 %! out = tuckerfun(T,Afun);
 %! ref = A{1}*T*A{2}.';
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test % 2d complex
 %! T = randn(2,3)+1i*randn(2,3);
 %! A{1} = randn(3,2)+1i*randn(3,2);
@@ -90,7 +91,7 @@ end
 %! Afun{2} = @(X) A{2}*X;
 %! out = tuckerfun(T,Afun);
 %! ref = A{1}*T*A{2}.';
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test % 3d
 %! T = randn(2,3,4);
 %! A{1} = randn(3,2);
@@ -101,7 +102,7 @@ end
 %! Afun{3} = @(X) A{3}*X;
 %! out = tuckerfun(T,Afun);
 %! ref = tucker(T,A);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test % 4d
 %! T = randn(2,3,4,5);
 %! A{1} = randn(3,2);
@@ -114,7 +115,7 @@ end
 %! Afun{4} = @(X) A{4}*X;
 %! out = tuckerfun(T,Afun);
 %! ref = tucker(T,A);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test % tensorization
 %! A{1} = randn(2,1);
 %! A{2} = randn(3,1);
@@ -126,7 +127,7 @@ end
 %! Afun{4} = @(X) A{4}*X;
 %! out = tuckerfun(1,Afun);
 %! ref = tensorize(A);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test %tensor with implicit last dimension
 %! T = randn(2,3,4);
 %! A{1} = randn(2);
@@ -139,15 +140,15 @@ end
 %! Afun{4} = @(X) A{4}*X;
 %! out = tuckerfun(T,Afun);
 %! ref = tucker(T,A);
-%! assert(out,ref)
-% Function --> fft
+%! assert(out,ref,1e-13)
+%! % Function fft
 %!test
 %! T = randn(4,6,8);
 %! Afun = @(X) fft(X);
 %! out = tuckerfun(T,Afun,Afun,Afun);
 %! ref = fftn(T);
-%! assert(out,ref)
-% Function --> transpose
+%! assert(out,ref,1e-13)
+%! % Function transpose
 %!test
 %! T = randn(2,3,4);
 %! A{1} = randn(2,3);
@@ -158,8 +159,8 @@ end
 %! Afun{3} = @(X) A{3}'*X;
 %! out = tuckerfun(T,Afun);
 %! ref = ttucker(T,A);
-%! assert(out,ref,1e-14)
-% Function --> inverse
+%! assert(out,ref,1e-13)
+%! % Function inverse
 %!test
 %! T = randn(2,3,4);
 %! A{1} = randn(2);
@@ -169,8 +170,8 @@ end
 %! Afun{2} = @(X) A{2}\X;
 %! Afun{3} = @(X) A{3}\X;
 %! out = tuckerfun(T,Afun);
-%! ref = itucker(T,A,1e-14);
-%! assert(out,ref)
+%! ref = itucker(T,A);
+%! assert(out,ref,1e-13)
 %!test % Jump some modes
 %! T = randn(2,3,4,5);
 %! A1 = randn(3,2);
@@ -183,28 +184,28 @@ end
 %! A4f = @(x) A4*x;
 %! out = tuckerfun(T,[],A2f,A3f,A4f);
 %! ref = tucker(T,[],A2,A3,A4);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = tuckerfun(T,A1f,[],A3f,A4f);
 %! ref = tucker(T,A1,[],A3,A4);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = tuckerfun(T,A1f,A2f,[],A4f);
 %! ref = tucker(T,A1,A2,[],A4);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = tuckerfun(T,A1f,A2f,A3f,[]);
 %! ref = tucker(T,A1,A2,A3,[]);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = tuckerfun(T,[],A2f,A3f,[]);
 %! ref = tucker(T,[],A2,A3,[]);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = tuckerfun(T,A1f,[],[],A4f);
 %! ref = tucker(T,A1,[],[],A4);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = tuckerfun(T,A1f,[],A3f,[]);
 %! ref = tucker(T,A1,[],A3,[]);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %! out = tuckerfun(T,[],[],A3f,[]);
 %! ref = tucker(T,[],[],A3,[]);
-%! assert(out,ref)
+%! assert(out,ref,1e-13)
 %!test
 %! T = randn(2,3,4,5);
 %! A{1} = [];
@@ -217,7 +218,7 @@ end
 %! Af{4} = @(x) A{4}*x;
 %! ref = tucker(T,A);
 %! out = tuckerfun(T,Af);
-%! assert(ref,out)
+%! assert(ref,out,1e-13)
 %!error
 %! tuckerfun();
 %!error

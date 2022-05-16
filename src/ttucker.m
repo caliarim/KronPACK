@@ -4,7 +4,7 @@ function T = ttucker(T,varargin)
 %
 %       S = T x_1 L{1}.' x_2 L{2}.' x_3 ... x_d L{d}.'
 %
-%    without explicit transposition.
+%    without explicit transposition of the matrices.
 %    Here T is a complex tensor of size m_1 x ... x m_d, L a cell array
 %    of complex matrices (L{mu} of size m_{mu} x n_{mu}) and x_mu denotes
 %    the mu-mode product.
@@ -13,16 +13,16 @@ function T = ttucker(T,varargin)
 %
 %       S = T x_1 L1.' x_2 L2.' x_3 ... x_d Ld.'
 %
-%    without explicit transposition.
+%    without explicit transposition of the matrices.
 %    Here T is a complex tensor of size m_1 x ... x m_d, while Lmu is a
 %    complex matrix of size m_{mu} x n_{mu}.
 %
 %    In both cases, if the entry corresponding to the mu-th matrix is empty,
 %    then the associated mu-mode product is skipped.
 %
-%    [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2021
+%            problems, Submitted 2022
   if (nargin < 2)
     error('Not enough input arguments.');
   end
@@ -38,14 +38,28 @@ function T = ttucker(T,varargin)
   if (lmu == 0)
     error('Not enough non-empty input arguments.');
   end
-  if (mur(lmu) == lT)
+  if (mur(1) == 1) && (mur(lmu) == lT)
+    T = varargin{1}.'*reshape(T, sT(1), []);
+    sT(1) = size(T, 1);
+    T = reshape(T, [], sT(mur(lmu)))*varargin{mur(lmu)};
+    sT(mur(lmu)) = size(T, 2);
+    T = reshape(T, sT);
+    mur = mur(2:lmu-1);
+    lmu = lmu-2;
+  elseif (mur(1) == 1) && (mur(lmu) ~= lT)
+    T = varargin{1}.'*reshape(T, sT(1), []);
+    sT(1) = size(T, 1);
+    T = reshape(T, sT);
+    mur = mur(2:lmu);
+    lmu = lmu-1;
+  elseif (mur(1) ~= 1) && (mur(lmu) == lT)
     T = reshape(T, [], sT(mur(lmu)))*varargin{mur(lmu)};
     sT(mur(lmu)) = size(T, 2);
     T = reshape(T, sT);
     mur = mur(1:lmu-1);
     lmu = lmu-1;
   end
-  if(lmu > 0)
+  if (lmu > 0)
     T = permute(T, [1:(mur(1)-1), (mur(1)+1):lT, mur(1)]);
     for mu = 1:(lmu-1)
       T = reshape(T, [], sT(mur(mu)))*varargin{mur(mu)};
@@ -94,6 +108,15 @@ end
 %! A{4} = randn(5,6);
 %! out = ttucker(T,A);
 %! ref = mump(mump(mump(mump(T,A{1}.',1),A{2}.',2),A{3}.',3),A{4}.',4);
+%! assert(out,ref,1e-13)
+%!test % tucker
+%! T = randn(2,3,4,5);
+%! A{1} = randn(2,3);
+%! A{2} = randn(3,4);
+%! A{3} = randn(4,5);
+%! A{4} = randn(5,6);
+%! out = ttucker(T,A);
+%! ref = tucker(T,A{1}.',A{2}.',A{3}.',A{4}.');
 %! assert(out,ref,1e-13)
 %!test % tensorization
 %! A{1} = randn(1,2);

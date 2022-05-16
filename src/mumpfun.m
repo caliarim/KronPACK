@@ -1,21 +1,21 @@
 function T = mumpfun(T, Lfun, mu)
 % MUMPFUN mu-mode action.
 %    S = MUMPFUN(T, Lfun, mu) computes the mu-mode action of the
-%    complex tensor T of size m_1 x ... x m_d with the function Lfun,
-%    that is
+%    complex tensor T of size m_1 x ... x m_d with the function Lfun
+%    (which act on columns of a matrix), that is
 %
 %    S = T x_{mu} Lfun
 %
-%    [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2021
+%            problems, Submitted 2022
   if (nargin < 3)
     error('Not enough input arguments.');
   end
   if (isempty(T) || isempty(Lfun) || isempty(mu))
     error('Not enough non-empty input arguments');
   end
-  sT = [size(T),ones(1,mu-length(size(T)))];
+  sT = [size(T), ones(1, mu-length(size(T)))];
   if (mu == 1)
     T = Lfun(reshape(T, sT(mu), []));
     sT(mu) = size(T, 1);
@@ -75,7 +75,7 @@ end
 %! assert(Y,mump(T,B,2))
 %! Y = mumpfun(T,Cfun,3);
 %! assert(Y,mump(T,C,3))
-%!test
+%!test % implicit last dimension
 %! T = randn(2);
 %! A = randn(3,1);
 %! Afun = @(u) A*u;

@@ -20,9 +20,9 @@ function kv = kronsumv(T, varargin)
 %    In both cases, if the entry corresponding to the mu-th matrix is empty,
 %    then the associated mu-mode product is skipped.
 %
-%    [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2021
+%            problems, Submitted 2022
   if (nargin < 2)
     error('Not enough input arguments.');
   end
@@ -41,28 +41,27 @@ function kv = kronsumv(T, varargin)
     kv = kv + mump(T, varargin{mu}, mu);
   end
 end
-%!test % correctness 1d
-%! T = randn(2,1);
+%!test % different input form
+%! T = randn(2,3,4);
 %! A{1} = randn(2);
-%! M = A{1};
-%! ref = M*T(:);
-%! out1 = kronsumv(T,A);
-%! assert(ref,out1(:),1e-10)
-%! out2 = kronsumv(T,A{1});
-%! assert(ref,out2(:),1e-10)
-%!test % correctness 3d
+%! A{2} = randn(3);
+%! A{3} = randn(4);
+%! assert(kronsumv(T,A),kronsumv(T,A{1},A{2},A{3}))
+%!test % 1d
+%! T = randn(2,1);
+%! A = randn(2);
+%! ref = A*T;
+%! out = kronsumv(T,A);
+%! assert(ref,out(:),1e-10)
+%!test % 2d
 %! T = randn(2,3);
 %! A{1} = randn(2);
 %! A{2} = randn(3);
-%! I{1} = eye(2);
-%! I{2} = eye(3);
-%! M = kron(I{2},A{1}) + kron(A{2},I{1});
+%! M = kron(eye(3),A{1}) + kron(A{2},eye(2));
 %! ref = M*T(:);
-%! out1 = kronsumv(T,A);
-%! assert(ref,out1(:),1e-10)
-%! out2 = kronsumv(T,A{1},A{2});
-%! assert(ref,out2(:),1e-10)
-%!test % correctness 3d
+%! out = kronsumv(T,A);
+%! assert(ref,out(:),1e-10)
+%!test % 3d
 %! T = randn(2,3,4);
 %! A{1} = randn(2);
 %! A{2} = randn(3);
@@ -73,17 +72,27 @@ end
 %! M = kron(I{3},kron(I{2},A{1})) + kron(I{3},kron(A{2},I{1})) + ...
 %!     kron(A{3},kron(I{2},I{1}));
 %! ref = M*T(:);
-%! out1 = kronsumv(T,A);
-%! assert(ref,out1(:),1e-10)
-%! out2 = kronsumv(T,A{1},A{2},A{3});
-%! assert(ref,out2(:),1e-10)
-%!test
-%! T = randn(3,4,5);
-%! A = randn(4,3);
-%! S = kronsumv(T,A);
-%! ref = mump(T,A,1);
-%! assert(ref,S)
-%!test
+%! out = kronsumv(T,A);
+%! assert(ref,out(:),1e-10)
+%!test % 4d
+%! T = randn(2,3,4,5);
+%! A{1} = randn(2);
+%! A{2} = randn(3);
+%! A{3} = randn(4);
+%! A{4} = randn(5);
+%! ref = kronsum(A)*T(:);
+%! out = kronsumv(T,A);
+%! assert(ref,out(:),1e-10)
+%!test % complex
+%! T = randn(2,3,4,5)*1i+randn(2,3,4,5);
+%! A{1} = randn(2)*1i+randn(2);
+%! A{2} = randn(3)*1i+randn(3);
+%! A{3} = randn(4)*1i+randn(4);
+%! A{4} = randn(5)*1i+randn(5);
+%! ref = kronsum(A)*T(:);
+%! out = kronsumv(T,A);
+%! assert(ref,out(:),1e-10)
+%!test % Jump some modes
 %! T = randn(4,3,2);
 %! A = randn(4);
 %! B = randn(3);

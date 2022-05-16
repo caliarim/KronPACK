@@ -1,4 +1,4 @@
-% Example of linear evolutionary equation (see [CCZ21, section 4.3])
+% Example of linear evolutionary equation (see [CCZ22, Sec. 4.4])
 %
 % Equation:
 % \partial_t u + \sum_\mu \beta_\mu \partial_{x_mu}(x_\mu u) = ...
@@ -6,15 +6,15 @@
 % Spatial domain: [a1,b1]x[a2,b2]x[a3,b3]=[0,2]^3
 % Time domain: [0,tstar] = [0,1/2]
 % Boundary conditions:
-% Homogeneous Dirichlet at x_1 = x_2 = x_3 = 0
-% Homogeneous Neumann at x_1 = x_2 = x_3 = 2
+% Homogeneous Dirichlet at x_\mu = 0, \mu = 1,2,3
+% Homogeneous Neumann at x_\mu = 2, \mu = 1,2,3
 % Space discretization: second order centered finite differences with
 %                       nbold uniformely distributed nodes
 % Time integration method: Exponential, ode23 and RK4
 %
-% [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2021
+%         tensor-structured problems, Submitted 2022
 
 clear all
 addpath('../src')

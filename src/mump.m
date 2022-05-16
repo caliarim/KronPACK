@@ -6,20 +6,22 @@ function T = mump(T, L, mu)
 %
 %     S = T x_{mu} L
 %
-%    [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2021
+%            problems, Submitted 2022
   if (nargin < 3)
     error('Not enough input arguments.');
   end
   if (isempty(T) || isempty(L) || isempty(mu))
     error('Not enough non-empty input arguments');
   end
-  sT = [size(T),ones(1,mu-length(size(T)))];
+  sT = [size(T), ones(1, mu-length(size(T)))];
   sL = size(L);
   sT(mu) = sL(1);
   if (mu == 1)
     T = reshape(L*reshape(T, sL(2), []), sT);
+  elseif (mu == length(sT))
+    T = reshape(reshape(T, [], sL(2))*L.', sT);
   else
     idx = [mu, 1:(mu-1), (mu+1):length(sT)];
     T = ipermute(reshape(L*reshape(permute(T, idx), sL(2), []), sT(idx)), idx);

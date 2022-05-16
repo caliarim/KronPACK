@@ -1,4 +1,4 @@
-% Example of semilinear evolutionary equation (see [CCZ21, section 4.4])
+% Example of semilinear evolutionary equation (see [CCZ22, Sec. 4.5])
 %
 % Equation:
 % \partial_t u(t,x) = \Delta u(t,x) + 1/(1+u(t,x)^2) + \Phi(t,x)
@@ -10,9 +10,9 @@
 %                       nbold uniformely distributed nodes
 % Time integration method: Backward-Forward Euler
 %
-% [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2021
+%         tensor-structured problems, Submitted 2022
 
 clear all
 addpath('../src')

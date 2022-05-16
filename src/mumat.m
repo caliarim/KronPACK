@@ -8,9 +8,9 @@ function T = mumat(T, mu)
 %     where S is the matrix of size m_{mu} x (m_1...m_{mu-1}m_{mu+1}...m_d)
 %     having the mu-fibers of T as columns.
 %
-%    [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2021
+%            problems, Submitted 2022
   if (nargin < 2)
     error('Not enough input arguments.');
   end

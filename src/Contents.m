@@ -1,8 +1,8 @@
 %  Source functions of the KronPACK package
 %
-%  [CCZ21] M. Caliari, F. Cassini, and F. Zivcovich,
+%  [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
 %          A mu-mode BLAS approach for multidimensional tensor-structured
-%          problems, Submitted 2021
+%          problems, Submitted 2022
 %
 %  mu-mode-based operations
 %    mumat      - mu-matricization
