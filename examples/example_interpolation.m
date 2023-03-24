@@ -1,4 +1,4 @@
-% Example of multivariate interpolation (see [CCZ22, Sec. 4.3])
+% Example of multivariate interpolation (see [CCZ23, Sec. 4.3])
 %
 % Function: f(x1,x2,x3,x4,x5)=1/(1+16*(x1^2+x2^2+x3^2+x4^2+x5^2))
 % Domain: [a1,b1]x[a2,b2]x[a3,b3]x[a4,b4]x[a5,b5]=[-1,1]^5
@@ -6,13 +6,13 @@
 % Interpolation nodes: mbold Chebyshev points
 % Evaluation points: nbold uniformely distributed
 %
-% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
-%         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2022
+% [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
+%         A mu-mode BLAS approach for multidimensional tensor-structured
+%         problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
 
 clear all
 addpath('../src')
-disp(sprintf('---- Multivariate interpolation ----'))
+fprintf('---- Multivariate interpolation ----\n')
 d = 5;
 f = @(x1, x2, x3, x4, x5) 1./(1+16*(x1.^2+x2.^2+x3.^2+x4.^2+x5.^2));
 a = -ones(1, d);
@@ -43,10 +43,10 @@ for m = mrange
   P = tucker(F, L);
   err = P-F_exact;
   rel_err_norm = max(abs(err(:)))/F_exact_norm;
-  disp(sprintf('Lagrange interpolation error for m = %3d: %.2e', m, rel_err_norm))
+  fprintf('Lagrange interpolation error for m = %3d: %.2e\n', m, rel_err_norm)
   err_mrange(counter)= rel_err_norm;
 end
-disp(sprintf(' '));
+fprintf(' \n');
 rmpath('../src')
 K = 1/4+sqrt(17/16);
 figure;

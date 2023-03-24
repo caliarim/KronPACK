@@ -1,8 +1,8 @@
 %  Source functions of the KronPACK package
 %
-%  [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
+%  [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
 %          A mu-mode BLAS approach for multidimensional tensor-structured
-%          problems, Submitted 2022
+%          problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
 %
 %  mu-mode-based operations
 %    mumat      - mu-matricization
@@ -21,8 +21,3 @@
 %  Kronecker product-based operations
 %    kronsum    - Kronecker sum
 %    kronsumv   - Action of Kronecker sum on a tensor
-%
-%  Chebfun functions
-%    lagpts     - Laguerre points and Gauss-Laguerre quadrature weights
-%    gammaratio - Ratio of gamma functions
-%    hermpts    - Hermite points and Gauss-Laguerre quadrature weights

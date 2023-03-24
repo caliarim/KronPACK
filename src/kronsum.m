@@ -16,9 +16,9 @@ function K = kronsum(varargin)
 %    K = KRONSUM(L1, L2, ..., Ld) produces the Kronecker sum of the
 %    complex matrices L1, L2, ..., Ld, with Lmu of size n_{mu} x n_{mu}.
 %
-%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2022
+%            problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
   if (nargin < 1)
     error('Not enough input arguments.')
   end
@@ -29,8 +29,6 @@ function K = kronsum(varargin)
   if (any(cellfun(@isempty,varargin)) || (d == 1))
     error('Invalid input arguments.')
   end
-  murange = 1:length(varargin);
-  murange = murange(~cellfun(@isempty,varargin));
   n = cellfun(@length,varargin);
   K = kron(speye(prod(n(2:d))), varargin{1});
   for mu = 2:d-1

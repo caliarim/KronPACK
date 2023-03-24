@@ -1,4 +1,4 @@
-% Example of linear evolutionary equation (see [CCZ22, Sec. 4.4])
+% Example of linear evolutionary equation (see [CCZ23, Sec. 4.4])
 %
 % Equation:
 % \partial_t u + \sum_\mu \beta_\mu \partial_{x_mu}(x_\mu u) = ...
@@ -12,17 +12,17 @@
 %                       nbold uniformely distributed nodes
 % Time integration method: Exponential, ode23 and RK4
 %
-% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
-%         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2022
+% [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
+%         A mu-mode BLAS approach for multidimensional tensor-structured
+%         problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
 
 clear all
 addpath('../src')
-disp(sprintf('---- Linear evolutionary equation ----'))
+fprintf('---- Linear evolutionary equation ----\n')
 d = 3;
 a = zeros(1, d);
 b = 2*ones(1, d);
-nbold = 5*[10:12];
+nbold = 5*(10:12);
 alpha = 1/2;
 beta = 2/3*ones(1, d);
 gamma = 1/100;
@@ -48,7 +48,7 @@ for mu = 2:d
   U0 = U0.*(X{mu}-a(mu)).*(b(mu)-X{mu}).^2;
 end
 % tucker
-disp(sprintf('Tucker'))
+fprintf('Tucker\n')
 Utucker{1} = U0;
 tic
 for mu = 1:d
@@ -58,12 +58,12 @@ for k = 1:ts_tucker
   Utucker{k+1} = tucker(Utucker{k}, E);
 end
 tucker_elapsed = toc;
-disp(sprintf('Time steps: %i', ts_tucker))
-disp(sprintf('Elapsed time: %.2e\n', tucker_elapsed))
+fprintf('Time steps: %i\n', ts_tucker)
+fprintf('Elapsed time: %.2e\n\n', tucker_elapsed)
 Uref = Utucker{ts_tucker+1};
 Uref_norm = max(abs(Uref(:)));
 % ode23 - Vector formulation
-disp(sprintf('ode23 - Vector formulation'))
+fprintf('ode23 - Vector formulation\n')
 M = kronsum(A);
 odefun = @(t, y) M*y;
 tic
@@ -72,11 +72,11 @@ ode23_vec_elapsed = toc;
 Uode23_vec = reshape(Uode23_vec(end,:).', nbold);
 ode23_vec_err = Uref-Uode23_vec;
 ode23_vec_rel_err_norm = max(abs(ode23_vec_err(:)))/Uref_norm;
-disp(sprintf('Time steps: %i', length(tode23_vec)))
-disp(sprintf('Elapsed time: %.2e', ode23_vec_elapsed))
-disp(sprintf('Error: %.2e\n', ode23_vec_rel_err_norm))
+fprintf('Time steps: %i\n', length(tode23_vec))
+fprintf('Elapsed time: %.2e\n', ode23_vec_elapsed)
+fprintf('Error: %.2e\n\n', ode23_vec_rel_err_norm)
 % ode23 - Tensor formulation
-disp(sprintf('ode23 - Tensor formulation'))
+fprintf('ode23 - Tensor formulation\n')
 odefun = @(t, y) reshape(kronsumv(reshape(y, nbold), Afull), [], 1);
 tic
 [tode23, Uode23] = ode23(odefun, [0, tstar], U0(:));
@@ -84,11 +84,11 @@ ode23_elapsed = toc;
 Uode23 = reshape(Uode23(end,:).', nbold);
 ode23_err = Uref-Uode23;
 ode23_rel_err_norm = max(abs(ode23_err(:)))/Uref_norm;
-disp(sprintf('Time steps: %i', length(tode23)))
-disp(sprintf('Elapsed time: %.2e', ode23_elapsed))
-disp(sprintf('Error: %.2e\n', ode23_rel_err_norm))
+fprintf('Time steps: %i\n', length(tode23))
+fprintf('Elapsed time: %.2e\n', ode23_elapsed)
+fprintf('Error: %.2e\n\n', ode23_rel_err_norm)
 % RK4 - Vector formulation
-disp(sprintf('RK4 - Vector formulation'))
+fprintf('RK4 - Vector formulation\n')
 ts_rk4 = 1351;
 taurk = tstar/ts_rk4;
 rk4_vec_fun = @(y) M*y;
@@ -105,11 +105,11 @@ rk4_vec_elapsed = toc;
 Urk4_vec = reshape(Urk4_vec, nbold);
 rk4_vec_err = Uref-Urk4_vec;
 rk4_vec_rel_err_norm = max(abs(rk4_vec_err(:)))/Uref_norm;
-disp(sprintf('Time steps: %i', ts_rk4))
-disp(sprintf('Elapsed time: %.2e', rk4_vec_elapsed))
-disp(sprintf('Error: %.2e\n', rk4_vec_rel_err_norm))
+fprintf('Time steps: %i\n', ts_rk4)
+fprintf('Elapsed time: %.2e\n', rk4_vec_elapsed)
+fprintf('Error: %.2e\n\n', rk4_vec_rel_err_norm)
 % RK4 - Tensor formulation
-disp(sprintf('RK4 - Tensor formulation'))
+fprintf('RK4 - Tensor formulation\n')
 rk4_fun = @(y) kronsumv(y, Afull);
 Urk4 = U0;
 tic
@@ -123,7 +123,7 @@ end
 rk4_elapsed = toc;
 rk4_err = Uref-Urk4;
 rk4_rel_err_norm = max(abs(rk4_err(:)))/Uref_norm;
-disp(sprintf('Time steps: %i', ts_rk4))
-disp(sprintf('Elapsed time: %.2e', rk4_elapsed))
-disp(sprintf('Error: %.2e\n', rk4_rel_err_norm))
+fprintf('Time steps: %i\n', ts_rk4)
+fprintf('Elapsed time: %.2e\n', rk4_elapsed)
+fprintf('Error: %.2e\n\n', rk4_rel_err_norm)
 rmpath('../src')

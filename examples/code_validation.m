@@ -1,32 +1,32 @@
-% Code validation for TUCKER function of KronPACK (see [CCZ22, Sec. 4.1])
+% Code validation for TUCKER function of KronPACK (see [CCZ23, Sec. 4.1])
 %
-% To execute this script, it is required to have in path the toolboxes
-% Tensor Toolbox for MATLAB and Tensorlab.
+% To execute this script, the toolboxes Tensorlab and Tensor Toolbox
+% for MATLAB must be in path.
 % Moreover, as Tensor Toolbox for MATLAB does not have GNU Octave support,
-% this script can't be exectuted in GNU Octave.
+% this script can't be executed in GNU Octave.
 %
-% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
-%         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2022
+% [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
+%         A mu-mode BLAS approach for multidimensional tensor-structured
+%         problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
 
 clear all
 cv = 1;
 try
   tmprod(rand(2),{rand(2),rand(2)},1:2);
 catch
-  disp('Tensorlab not found in path.')
+  warning('Tensorlab not found in path.')
   cv = 0;
 end
 try
   ttm(tensor(rand(2)),{rand(2),rand(2)});
 catch
-  disp('Tensor Toolbox for MATLAB not found in path.')
+  warning('Tensor Toolbox for MATLAB not found in path.')
   cv = 0;
 end
 
 if cv
   addpath('../src')
-  disp(sprintf('---- Code validation ----'))
+  fprintf('---- Code validation ----\n')
   drange = [3*ones(1,4),6*ones(1,4)];
   nrange = [(12:2:18).^2,(12:2:18)];
   nrepsrange = [100,50,20,10,100,50,20,10];
@@ -35,7 +35,7 @@ if cv
     n = nrange(j);
     nreps = nrepsrange(j);
     nbold = n*ones(1,d);
-    disp(sprintf('d = %i, n = %i',d,n))
+    fprintf('d = %i, n = %i\n',d,n)
     T = randn(nbold);
     Tconv = tensor(T);
     for mu = 1:d
@@ -59,11 +59,11 @@ if cv
       S_tt = ttm(Tconv,M);
     end
     time_tt(j) = toc/nreps;
-    disp(sprintf('Elapsed time KronPACK: %.2e',time_kp(j)))
-    disp(sprintf('Elapsed time Tensorlab: %.2e',time_tl(j)))
-    disp(sprintf('Elapsed time Tensor Toolbox for MATLAB: %.2e',time_tt(j)))
-    disp(sprintf('Error w/Tensorlab: %.2e',norm(S_tl(:)-S_kp(:),inf)/norm(S_kp(:),inf)))
-    disp(sprintf('Error w/Tensor Toolbox for MATLAB: %.2e',norm(S_tt(:)-S_kp(:),inf)/norm(S_kp(:),inf)))
+    fprintf('Elapsed time KronPACK: %.2e\n',time_kp(j))
+    fprintf('Elapsed time Tensorlab: %.2e\n',time_tl(j))
+    fprintf('Elapsed time Tensor Toolbox for MATLAB: %.2e\n',time_tt(j))
+    fprintf('Error w/Tensorlab: %.2e\n',norm(S_tl(:)-S_kp(:),inf)/norm(S_kp(:),inf))
+    fprintf('Error w/Tensor Toolbox for MATLAB: %.2e\n',norm(S_tt(:)-S_kp(:),inf)/norm(S_kp(:),inf))
     disp(' ')
   end
   figure
@@ -89,5 +89,5 @@ if cv
   drawnow
   rmpath('../src')
 else
-  warning('Code validation not performed.')
+  warning('The experiment in [CCZ23, Sec. 4.1] can''t be reproduced without Tensorlab and Tensor Toolbox for MATLAB. Proceed with other examples.')
 end

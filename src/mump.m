@@ -6,9 +6,9 @@ function T = mump(T, L, mu)
 %
 %     S = T x_{mu} L
 %
-%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2022
+%            problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
   if (nargin < 3)
     error('Not enough input arguments.');
   end

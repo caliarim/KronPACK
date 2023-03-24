@@ -1,4 +1,4 @@
-% Example of HLF function decomposition (see [CCZ22, Sec. 4.2])
+% Example of HLF function decomposition (see [CCZ23, Sec. 4.2])
 %
 % Function:
 % f(x1,x2,x3)=x2^2*sin(10*x2)*sin(20*x1)/(sin(2*pi*x3)+2)*exp(-x1^2-2*x2)
@@ -6,20 +6,21 @@
 % Method: Hermite-Laguerre-Fourier and Fourier-Fourier-Fourier
 % Evaluation points: nbold uniformely distributed
 %
-% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
-%         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2022
+% [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
+%         A mu-mode BLAS approach for multidimensional tensor-structured
+%         problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
 
 clear all
 addpath('../src')
-disp(sprintf('---- HLF function decomposition ----'))
+fprintf('---- HLF function decomposition ----\n')
 d = 3;
+hmt = 20; % number of repetitions in taking wall-clock time
 f = @(x1, x2, x3) x2.^2.*sin(10*x2).*sin(20*x1)./(sin(2*pi*x3)+2).*exp(-x1.^2-2*x2);
 alpha = 4;
 a = [-4, 0, -1];
 b = [4, 11, 1];
 nbold = 301*ones(1, d);
-tol = 10.^[-1:-1:-5];
+tol = 10.^(-1:-1:-5);
 mrange_HLF = [45, 31, 8; ...
               49, 45, 16; ...
               53, 59, 24; ...
@@ -38,7 +39,7 @@ end
 F_exact = f(X{1:d});
 F_exact_norm = max(abs(F_exact(:)));
 for idx = 1:size(mrange_HLF,1)
-  disp(sprintf('Prescribed accuracy: %.2e', tol(idx)))
+  fprintf('Prescribed accuracy: %.2e\n', tol(idx))
   % HLF approach
   mbold_HLF = mrange_HLF(idx,:);
   % Hermite
@@ -66,51 +67,53 @@ for idx = 1:size(mrange_HLF,1)
   F = f(XI{1:d});
   FW = F.*W;
   tic
-  PSI{1} = ones(mbold_HLF(1))*sqrt(beta(1))/sqrt(sqrt(pi));
-  PSI{1}(1,:) = PSI{1}(1,:).*wxi{1}';
-  PSI{1}(2,:) = sqrt(2)*beta(1)*xi{1}'.*PSI{1}(2,:).*wxi{1}';
-  for i1 = 3:mbold_HLF(1)
-    PSI{1}(i1,:) = (sqrt(2)*beta(1)*xi{1}'.*PSI{1}(i1-1,:)-...
-                   sqrt(i1-2)*PSI{1}(i1-2,:))/sqrt(i1-1);
+  for i = 1:hmt
+    PSI{1} = ones(mbold_HLF(1))*sqrt(beta(1))/sqrt(sqrt(pi));
+    PSI{1}(1,:) = PSI{1}(1,:).*wxi{1}';
+    PSI{1}(2,:) = sqrt(2)*beta(1)*xi{1}'.*PSI{1}(2,:).*wxi{1}';
+    for i1 = 3:mbold_HLF(1)
+      PSI{1}(i1,:) = (sqrt(2)*beta(1)*xi{1}'.*PSI{1}(i1-1,:)-...
+                      sqrt(i1-2)*PSI{1}(i1-2,:))/sqrt(i1-1);
+    end
+    PSI{2} = ones(mbold_HLF(2))*sqrt(beta(2)/gamma(alpha+1));
+    PSI{2}(1,:) = PSI{2}(1,:).*wxi{2}';
+    PSI{2}(2,:) = (1+alpha-beta(2)*xi{2}').*PSI{2}(2,:)/sqrt(alpha+1).*wxi{2}';
+    for i2 = 3:mbold_HLF(2)
+      PSI{2}(i2,:) = (2*i2-3+alpha-beta(2)*xi{2}')/sqrt((i2+alpha-1)*...
+                     (i2-1)).*PSI{2}(i2-1,:)-sqrt((i2-2+alpha)*(i2-2)/...
+                     (i2+alpha-1)/(i2-1))*PSI{2}(i2-2,:);
+    end
+    PSIfun{1} = @(f) PSI{1}*f;
+    PSIfun{2} = @(f) PSI{2}*f;
+    PSIfun{3} = @(f) f;
+    Fhat = tuckerfun(FW, PSIfun);
+    PHI{1} = ones(nbold(1), mbold_HLF(1))*sqrt(beta(1))/sqrt(sqrt(pi));
+    PHI{1}(:,1) = PHI{1}(:,1).*wx{1}';
+    PHI{1}(:,2) = sqrt(2)*beta(1)*x{1}.*PHI{1}(:,2).*wx{1}';
+    for i1 = 3:mbold_HLF(1)
+      PHI{1}(:,i1) = (sqrt(2)*beta(1)*x{1}.*PHI{1}(:,i1-1)-...
+                      sqrt(i1-2)*PHI{1}(:,i1-2))/sqrt(i1-1);
+    end
+    PHI{2} = ones(nbold(2), mbold_HLF(2))*sqrt(beta(2)/gamma(alpha+1));
+    PHI{2}(:,1) = PHI{2}(:,1).*wx{2}';
+    PHI{2}(:,2) = (1+alpha-beta(2)*x{2}).*PHI{2}(:,2)/sqrt(alpha+1).*wx{2}';
+    for i2 = 3:mbold_HLF(2)
+      PHI{2}(:,i2) = (2*i2-3+alpha-beta(2)*x{2})/sqrt((i2+alpha-1)*(i2-1)).*...
+                     PHI{2}(:,i2-1)-(i2-2+alpha)*...
+                                    sqrt((i2-2)/(i2+alpha-2)/(i2+alpha-1)/...
+                                         (i2-1))*PHI{2}(:,i2-2);
+    end
+    PHIfun{1} = @(f) PHI{1}*f;
+    PHIfun{2} = @(f) PHI{2}*f;
+    PHIfun{3} = @(f) interpft(f, nbold(3));
+    Ftilde = tuckerfun(Fhat, PHIfun);
   end
-  PSI{2} = ones(mbold_HLF(2))*sqrt(beta(2)/gamma(alpha+1));
-  PSI{2}(1,:) = PSI{2}(1,:).*wxi{2}';
-  PSI{2}(2,:) = (1+alpha-beta(2)*xi{2}').*PSI{2}(2,:)/sqrt(alpha+1).*wxi{2}';
-  for i2 = 3:mbold_HLF(2)
-    PSI{2}(i2,:) = (2*i2-3+alpha-beta(2)*xi{2}')/sqrt((i2+alpha-1)*...
-                   (i2-1)).*PSI{2}(i2-1,:)-sqrt((i2-2+alpha)*(i2-2)/...
-                   (i2+alpha-1)/(i2-1))*PSI{2}(i2-2,:);
-  end
-  PSIfun{1} = @(f) PSI{1}*f;
-  PSIfun{2} = @(f) PSI{2}*f;
-  PSIfun{3} = @(f) f;
-  Fhat = tuckerfun(FW, PSIfun);
-  PHI{1} = ones(nbold(1), mbold_HLF(1))*sqrt(beta(1))/sqrt(sqrt(pi));
-  PHI{1}(:,1) = PHI{1}(:,1).*wx{1}';
-  PHI{1}(:,2) = sqrt(2)*beta(1)*x{1}.*PHI{1}(:,2).*wx{1}';
-  for i1 = 3:mbold_HLF(1)
-    PHI{1}(:,i1) = (sqrt(2)*beta(1)*x{1}.*PHI{1}(:,i1-1)-...
-                    sqrt(i1-2)*PHI{1}(:,i1-2))/sqrt(i1-1);
-  end
-  PHI{2} = ones(nbold(2), mbold_HLF(2))*sqrt(beta(2)/gamma(alpha+1));
-  PHI{2}(:,1) = PHI{2}(:,1).*wx{2}';
-  PHI{2}(:,2) = (1+alpha-beta(2)*x{2}).*PHI{2}(:,2)/sqrt(alpha+1).*wx{2}';
-  for i2 = 3:mbold_HLF(2)
-    PHI{2}(:,i2) = (2*i2-3+alpha-beta(2)*x{2})/sqrt((i2+alpha-1)*(i2-1)).*...
-                  PHI{2}(:,i2-1)-(i2-2+alpha)*...
-                                 sqrt((i2-2)/(i2+alpha-2)/(i2+alpha-1)/...
-                                      (i2-1))*PHI{2}(:,i2-2);
-  end
-  PHIfun{1} = @(f) PHI{1}*f;
-  PHIfun{2} = @(f) PHI{2}*f;
-  PHIfun{3} = @(f) interpft(f, nbold(3));
-  Ftilde = tuckerfun(Fhat, PHIfun);
-  HLF_elapsed = toc;
+  HLF_elapsed = toc/hmt;
   HLF_err = Ftilde-F_exact;
   HLF_rel_err_norm = max(abs(HLF_err(:)))/F_exact_norm;
-  disp(sprintf('mbold_HLF = (%i,%i,%i)', mbold_HLF(1), mbold_HLF(2), mbold_HLF(3)))
-  disp(sprintf('HLF error: %.2e', HLF_rel_err_norm))
-  disp(sprintf('HLF elapsed time: %.2e', HLF_elapsed))
+  fprintf('mbold_HLF = (%i,%i,%i)\n', mbold_HLF(1), mbold_HLF(2), mbold_HLF(3))
+  fprintf('HLF error: %.2e\n', HLF_rel_err_norm)
+  fprintf('HLF elapsed time: %.2e\n', HLF_elapsed)
   % FFF approach
   mbold_FFF = mrange_FFF(idx,:);
   for mu = 1:d
@@ -120,13 +123,15 @@ for idx = 1:size(mrange_HLF,1)
   [XI{1:d}] = ndgrid(xi{1:d});
   F = f(XI{1:d});
   tic
-  Ftilde = interpft(interpft(interpft(F, nbold(1), 1), nbold(2) , 2), nbold(3) ,3);
-  FFF_elapsed = toc;
+  for i = 1:hmt
+    Ftilde = interpft(interpft(interpft(F, nbold(1), 1), nbold(2) , 2), nbold(3) ,3);
+  end
+  FFF_elapsed = toc/hmt;
   FFF_err = Ftilde-F_exact;
   FFF_rel_err_norm = max(abs(FFF_err(:)))/F_exact_norm;
-  disp(sprintf('mbold_FFF = (%i,%i,%i)', mbold_FFF(1), mbold_FFF(2), mbold_FFF(3)))
-  disp(sprintf('FFF error: %.2e', FFF_rel_err_norm))
-  disp(sprintf('FFF elapsed time: %.2e\n', FFF_elapsed))
+  fprintf('mbold_FFF = (%i,%i,%i)\n', mbold_FFF(1), mbold_FFF(2), mbold_FFF(3))
+  fprintf('FFF error: %.2e\n', FFF_rel_err_norm)
+  fprintf('FFF elapsed time: %.2e\n\n', FFF_elapsed)
   summary_elapsed(1,idx) = HLF_elapsed;
   summary_elapsed(2,idx) = FFF_elapsed;
   summary_err(1,idx) = HLF_rel_err_norm;

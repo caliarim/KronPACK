@@ -1,4 +1,4 @@
-% Example of semilinear evolutionary equation (see [CCZ22, Sec. 4.5])
+% Example of semilinear evolutionary equation (see [CCZ23, Sec. 4.5])
 %
 % Equation:
 % \partial_t u(t,x) = \Delta u(t,x) + 1/(1+u(t,x)^2) + \Phi(t,x)
@@ -10,17 +10,17 @@
 %                       nbold uniformely distributed nodes
 % Time integration method: Backward-Forward Euler
 %
-% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
-%         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2022
+% [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
+%         A mu-mode BLAS approach for multidimensional tensor-structured
+%         problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
 
 clear all
 addpath('../src')
-disp(sprintf('---- Semilinear evolutionary equation ----'))
+fprintf('---- Semilinear evolutionary equation ----\n')
 d = 3;
 a = zeros(1, d);
 b = ones(1, d);
-nbold = 4*[10:12];
+nbold = 4*(10:12);
 tstar = 1;
 ts = 100;
 tau = tstar/ts;
@@ -54,7 +54,7 @@ u_exact = exp(tstar)*u0;
 u_exact_norm = max(abs(u_exact));
 M = kronsum(M); % cell overwritten with matrix
 % Direct method
-disp(sprintf('Direct method'))
+fprintf('Direct method\n')
 [R, ~, Pmat] = chol(M);
 Rt = R';
 uk = Pmat'*u0;
@@ -70,10 +70,10 @@ direct_elapsed = toc;
 uk = Pmat*uk;
 direct_err = uk-u_exact;
 direct_rel_err_norm = max(abs(direct_err))/u_exact_norm;
-disp(sprintf('Error: %.2e', direct_rel_err_norm))
-disp(sprintf('Elapsed time: %.2e\n', direct_elapsed))
+fprintf('Error: %.2e\n', direct_rel_err_norm)
+fprintf('Elapsed time: %.2e\n\n', direct_elapsed)
 % CG (vector)
-disp(sprintf('CG method - vector'))
+fprintf('CG method - vector\n')
 maxit = 100;
 tol = min(h)^2/10;
 uk = u0;
@@ -85,11 +85,11 @@ end
 CG_vec_elapsed = toc;
 CG_vec_err = uk-u_exact;
 CG_vec_rel_err_norm = max(abs(CG_vec_err))/u_exact_norm;
-disp(sprintf('Avg. iterations per time step: %i', ceil(mean(iter))))
-disp(sprintf('Error: %.2e', CG_vec_rel_err_norm))
-disp(sprintf('Elapsed time: %.2e\n', CG_vec_elapsed))
+fprintf('Avg. iterations per time step: %i\n', ceil(mean(iter)))
+fprintf('Error: %.2e\n', CG_vec_rel_err_norm)
+fprintf('Elapsed time: %.2e\n\n', CG_vec_elapsed)
 % CG (tensor)
-disp(sprintf('CG method - tensor'))
+fprintf('CG method - tensor\n')
 uk = u0;
 Mfun = @(x) reshape(kronsumv(reshape(x, nbold), Mfull), [], 1);
 tic
@@ -100,11 +100,11 @@ end
 CG_elapsed = toc;
 CG_err = uk-u_exact;
 CG_rel_err_norm = max(abs(CG_err))/u_exact_norm;
-disp(sprintf('Avg. iterations per time step: %i', ceil(mean(iter))))
-disp(sprintf('Error: %.2e', CG_rel_err_norm))
-disp(sprintf('Elapsed time: %.2e\n', CG_elapsed))
+fprintf('Avg. iterations per time step: %i\n', ceil(mean(iter)))
+fprintf('Error: %.2e\n', CG_rel_err_norm)
+fprintf('Elapsed time: %.2e\n\n', CG_elapsed)
 % PCG
-disp(sprintf('PCG method'))
+fprintf('PCG method\n')
 uk = u0;
 Mfun = @(x) reshape(kronsumv(reshape(x, nbold), Mfull), [], 1);
 Pfun = @(x) reshape(itucker(reshape(x, nbold), P), [] ,1);
@@ -116,7 +116,7 @@ end
 PCG_elapsed = toc;
 PCG_err = uk-u_exact;
 PCG_rel_err_norm = max(abs(PCG_err))/u_exact_norm;
-disp(sprintf('Avg. iterations per time step: %i', ceil(mean(iter))))
-disp(sprintf('Error: %.2e', PCG_rel_err_norm))
-disp(sprintf('Elapsed time: %.2e\n', PCG_elapsed))
+fprintf('Avg. iterations per time step: %i\n', ceil(mean(iter)))
+fprintf('Error: %.2e\n', PCG_rel_err_norm)
+fprintf('Elapsed time: %.2e\n\n', PCG_elapsed)
 rmpath('../src')

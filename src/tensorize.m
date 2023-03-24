@@ -15,9 +15,9 @@ function T = tensorize(varargin)
 %   TENSORIZE(V) is equivalent to TUCKER(1,W), with W{mu} = V{mu}(:).
 %   The latter syntax has to be used in Matlab < R2016b or GNU Octave < 3.6.
 %
-%   [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
+%   [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
 %           A mu-mode BLAS approach for multidimensional tensor-structured
-%           problems, Submitted 2022
+%           problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
   if (nargin < 1)
     error('Not enough input arguments.');
   end

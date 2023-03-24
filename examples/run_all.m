@@ -1,5 +1,5 @@
 % Script to produce at once all the results of the experiments
-% of [CCZ22, Sec. 4]
+% of [CCZ23, Sec. 4]
 %
 % List of experiments:
 % (1) Code validation
@@ -8,9 +8,9 @@
 % (4) Linear evolutionary equation
 % (5) Semilinear evolutionary equation
 %
-% [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
-%         A mu-mode BLAS approach for multidimensional
-%         tensor-structured problems, Submitted 2022
+% [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
+%         A mu-mode BLAS approach for multidimensional tensor-structured
+%         problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
 
 clc
 clear all

@@ -20,9 +20,9 @@ function T = cttucker(T,varargin)
 %    In both cases, if the entry corresponding to the mu-th matrix is empty,
 %    then the associated mu-mode product is skipped.
 %
-%    [CCZ22] M. Caliari, F. Cassini, and F. Zivcovich,
+%    [CCZ23] M. Caliari, F. Cassini, and F. Zivcovich,
 %            A mu-mode BLAS approach for multidimensional tensor-structured
-%            problems, Submitted 2022
+%            problems, NUMERICAL ALGORITHMS 92, 2483-2508 (2023)
   if (nargin < 2)
     error('Not enough input arguments.');
   end
